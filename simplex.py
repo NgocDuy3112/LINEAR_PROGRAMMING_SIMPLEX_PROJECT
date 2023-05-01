@@ -2,11 +2,10 @@ import numpy as np
 
 
 class DantzigSimplexSolver():
-    def __init__(self, A, b, c, type='min'):
+    def __init__(self, A, b, c):
         self.A = A
         self.b = b
         self.c = c
-        self.type = type
         self.tableau = np.zeros((self.A.shape[0] + 1, self.A.shape[1] + self.A.shape[0] + 1))
     
     def __create_tableau__(self):
