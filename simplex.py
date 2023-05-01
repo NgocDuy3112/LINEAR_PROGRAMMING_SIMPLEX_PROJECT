@@ -1,7 +1,6 @@
 import numpy as np
 
 
-
 class DantzigSimplexSolver():
     def __init__(self, A, b, c, type='min'):
         self.A = A
@@ -10,7 +9,7 @@ class DantzigSimplexSolver():
         self.type = type
         self.tableau = np.zeros((self.A.shape[0] + 1, self.A.shape[1] + self.A.shape[0] + 1))
     
-    def __create__tableau__(self):
+    def __create_tableau__(self):
         """
         Create the tableau for the simplex method
         """
@@ -100,7 +99,7 @@ class DantzigSimplexSolver():
         """
         Solve the linear program
         """
-        self.tableau = self.__create__tableau__()
+        self.tableau = self.__create_tableau__()
         while np.any(self.tableau[0, :-1] < 0):
             self.tableau = self.__pivot__()
         return self
@@ -122,4 +121,6 @@ class BlandSimplexSolver():
 class TwoPhaseSimplexSolver():
     pass
     
-        
+
+if __name__ == '__main__':
+    st.title('Simplex Method')        
