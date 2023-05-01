@@ -119,8 +119,4 @@ class BlandSimplexSolver():
 
 
 class TwoPhaseSimplexSolver():
-    pass
-    
-
-if __name__ == '__main__':
-    st.title('Simplex Method')        
+    pass   
