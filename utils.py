@@ -77,9 +77,19 @@ class LPProblem():
                     assert elements[i][len(elements[i]) - 2:] == self.variables[var_index], 'Invalid constraint'
             self.A = np.array(A_row) if self.A is None else np.vstack((self.A, np.array(A_row)))
         return self
+    
+    def __transform_range_constraints__(self):
+        range_index = []
+        unrange_index = []
+        for constraint_str in self.range_constraints:
+            elements = constraint_str.split()
+            if elements[0] not in self.variables:
+                raise Exception('Invalid range constraint')
+            range_index.append(self.variables(elements[0]))
+        return self
 
     def get_problem(self):
-        self.__transform_objective__().__transform_constraints__()
+        self.__transform_objective__().__transform_range_constraints__().__transform_constraints__()
         return self.A, self.b, self.c
     
 if __name__ == "__main__":

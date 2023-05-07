@@ -219,7 +219,7 @@ class BlandSimplexSolver():
         return self
     
     def get_solution(self, slack=False):
-        return self.__get_solution__(slack) if self.__get_status__() != 'Unbounded' else np.inf
+        return self.__get_solution__(slack) if self.__get_status__() == 'Optimal' else np.inf
 
     def get_optimal_value(self):
         return self.__get_optimal_value__()
