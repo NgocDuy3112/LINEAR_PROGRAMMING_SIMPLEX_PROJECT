@@ -79,13 +79,13 @@ class LPProblem():
         return self
     
     def __transform_range_constraints__(self):
-        range_index = []
-        unrange_index = []
-        for constraint_str in self.range_constraints:
-            elements = constraint_str.split()
-            if elements[0] not in self.variables:
-                raise Exception('Invalid range constraint')
-            range_index.append(self.variables(elements[0]))
+        for range_str in self.range_constraints:
+            low = None
+            high = None
+            if range_str[1:-1].split(', ')[0] != 'None':
+                low = float(range_str[1:-1].split(', ')[0])
+            if range_str[1:-1].split(', ')[1] != 'None':
+                high = float(range_str[1:-1].split(', ')[1])
         return self
 
     def get_problem(self):
@@ -93,9 +93,11 @@ class LPProblem():
         return self.A, self.b, self.c
     
 if __name__ == "__main__":
-    lp_problem = LPProblem(3, 3)
-    lp_problem.set_objective('max + 2x1 + 3x2 + 5x3').add_constraint('+ 2x1 + 3x2 + 0x3 >= 10').add_constraint('+ x1 + x2 + x3 <= 5').add_constraint('+ 2x1 + 5x2 + 5x3 = 15')
-    print(lp_problem.get_problem())
-    # s = "+ 2x1 + 3x2 + 5x3 <= 10"
-    # elements = s.split()
-    # print(elements[3][len(elements[3]) - 2:])
+    # lp_problem = LPProblem(3, 3)
+    # lp_problem.set_objective('max + 2x1 + 3x2 + 5x3').add_constraint('+ 2x1 + 3x2 + 0x3 >= 10').add_constraint('+ x1 + x2 + x3 <= 5').add_constraint('+ 2x1 + 5x2 + 5x3 = 15')
+    # print(lp_problem.get_problem())
+    s = "+ 5/2x1 + 3/2x2 + 0x3 <= 10"
+    print(s.split(' '))
+    for ele in s.split(' '):
+        print(ele)
+    print(float(s.split(' ')[1][:-2]))
