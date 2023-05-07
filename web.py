@@ -8,9 +8,12 @@ st.title('SIMPLEX SOLVER')
 def get_user_input():
     num_variables = st.number_input('Enter number of variables', min_value=1, max_value=50, value=2)
     num_constraints = st.number_input('Enter number of constraints', min_value=1, max_value=50, value=2)
+    num_ranges = st.number_input('Enter number of ranges', min_value=0, max_value=50, value=num_variables)
     lp_problem = LPProblem(num_variables, num_constraints)
     target_func = st.text_input('Enter objective function', value='max + 3x1 + 5x2')
     lp_problem.set_objective(target_func)
+    for i in range(num_ranges):
+        range_constraint = st.text_input('Enter range of x' + str(i + 1) + ' as a tuple', value='(0, None)')
     for i in range(num_constraints):
         constraint = st.text_input('Enter constraint ' + str(i + 1), value='+ 2x1 + 3x2 <= 4')
         lp_problem.add_constraint(constraint)
