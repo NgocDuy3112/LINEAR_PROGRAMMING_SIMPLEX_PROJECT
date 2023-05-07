@@ -79,14 +79,31 @@ class LPProblem():
         return self
     
     def __transform_range_constraints__(self):
-        for range_str in self.range_constraints:
-            low = None
-            high = None
-            if range_str[1:-1].split(', ')[0] != 'None':
-                low = float(range_str[1:-1].split(', ')[0])
-            if range_str[1:-1].split(', ')[1] != 'None':
-                high = float(range_str[1:-1].split(', ')[1])
+        for range_constraint_str in self.range_constraints:
+            elements = range_constraint_str.split()
+            var_index = -1
+            if elements[-2] == '<=':
+                for i in range(1, len(elements) - 2, 2):
+                    var_index += 1
+                    if elements[i - 1][0] == '-':
+                        self.constraints.append('- ' + elements[i] + ' ' + elements[i + 1] + ' ' + elements[i + 2] + ' >= 0')
+                    elif elements[i - 1][0] == '+':
+                        self.constraints.append('+ ' + elements[i] + ' ' + elements[i + 1] + ' ' + elements[i + 2] + ' >= 0')
+                    else:
+                        raise Exception('Invalid constraint')
+                    assert elements[i + 1][len(elements[i + 1]) - 2:] == self.variables[var_index], 'Invalid constraint'
+            elif elements[-2] == '>=':
+                for i in range(1, len(elements) - 2, 2):
+                    var_index += 1
+                    if elements[i - 1][0] == '-':
+                        self.constraints.append('+ ' + elements[i] + ' ' + elements[i + 1] + ' ' + elements[i + 2] + ' >= 0')
+                    elif elements[i - 1][0] == '+':
+                        self.constraints.append('- ' + elements[i] + ' ' + elements[i + 1] + ' ' + elements[i + 2] + ' >= 0')
+                    else:
+                        raise Exception('Invalid constraint')
+                    assert elements[i + 1][len(elements[i + 1]) - 2:] == self.variables[var_index], 'Invalid constraint'
         return self
+
 
     def get_problem(self):
         self.__transform_objective__().__transform_range_constraints__().__transform_constraints__()

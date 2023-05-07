@@ -13,12 +13,13 @@ def get_user_input():
     target_func = st.text_input('Enter objective function', value='max + 3x1 + 5x2')
     lp_problem.set_objective(target_func)
     for i in range(num_ranges):
-        range_constraint = st.text_input('Enter range of x' + str(i + 1) + ' as a tuple', value='(0, None)')
+        range_constraint = st.text_input('Enter range constraint' + str(i + 1), value='0 <= x1 <= None')
         lp_problem.add_range_constraint(range_constraint)
     for i in range(num_constraints):
         constraint = st.text_input('Enter constraint ' + str(i + 1), value='+ 2x1 + 3x2 <= 4')
         lp_problem.add_constraint(constraint)
     return lp_problem
+
 
 def solve(problem):
     A, b, c = problem.get_problem()
