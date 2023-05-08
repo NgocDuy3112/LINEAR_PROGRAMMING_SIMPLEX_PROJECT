@@ -1,12 +1,14 @@
 import numpy as np
 
 class LPProblem():
-    def __init__(self, n_variables, n_constraints):
+    def __init__(self, n_variables, n_constraints, n_range_constraints):
         self.n_variables = n_variables
         self.n_constraints = n_constraints
+        self.n_range_constraints = n_range_constraints
         self.variables = ['x' + str(i) for i in range(1, n_variables + 1)]
         self.constraints = []
         self.range_constraints = []
+        self.neg_variables = []
         self.objective = None
         self.A = None
         self.b = None
@@ -80,47 +82,49 @@ class LPProblem():
     
     
     def __transform_range_constraints__(self):
-        for range_constraint_str in self.range_constraints:
-            elements = range_constraint_str.split()
-            var_index = -1
-            A_row = []
-            if elements[-2] == '<=':
-                if float(elements[-1]) == 0:
-                    var_index = self.variables.index(elements[-3])
-                    self.A[var_index] = -1 * self.A[var_index]
+        signed_variables = set()
+        for constraint in self.range_constraints:
+            elements = constraint.split()
+            signed_variables.add(elements[0])
+            if elements[1] == '<=':
+                if elements[2] == '0':
+                    idx = self.variables.index(elements[0])
+                    self.A[:, idx] = -1 * self.A[:, idx]
                 else:
-                    var_index = self.variables.index(elements[-3])
                     A_row = np.zeros(self.n_variables)
-                    A_row[var_index] = -1
+                    A_row[self.variables.index(elements[0])] = 1
                     self.A = np.vstack((self.A, A_row))
-                    self.b = np.append(self.b, -1 * float(elements[-1]))
-            elif elements[-2] == '>=':
-                if float(elements[-1]) != 0:
-                    var_index = self.variables.index(elements[-3])
+                    self.b = np.append(self.b, float(elements[2]))
+                    self.n_constraints += 1
+            elif elements[1] == '>=':
+                if elements[2] == '0':
                     A_row = np.zeros(self.n_variables)
-                    A_row[var_index] = 1
+                    A_row[self.variables.index(elements[0])] = -1
                     self.A = np.vstack((self.A, A_row))
-                    self.b = np.append(self.b, float(elements[-1]))
-            else:
-                pass
+                    self.b = np.append(self.b, -1 * float(elements[2]))
+                    self.n_constraints += 1
+        unsigned_variables = set(self.variables) - signed_variables
+        for variable in unsigned_variables:
+            pass
         return self
 
 
     def get_problem(self):
-        self.__transform_objective__().__transform_range_constraints__().__transform_constraints__()
+        self.__transform_constraints__()
+        self.__transform_range_constraints__()
+        self.__transform_objective__()
         return self.A, self.b, self.c
     
+
+
+
+    
 if __name__ == "__main__":
-    # lp_problem = LPProblem(3, 3)
-    # lp_problem.set_objective('max + 2x1 + 3x2 + 5x3').add_constraint('+ 2x1 + 3x2 + 0x3 >= 10').add_constraint('+ x1 + x2 + x3 <= 5').add_constraint('+ 2x1 + 5x2 + 5x3 = 15')
-    # print(lp_problem.get_problem())
-
-    # s = "+ 5/2x1 + 3/2x2 + 0x3 <= 10"
-    # print(s.split(' '))
-    # for ele in s.split(' '):
-    #     print(ele)
-    # print(float(s.split(' ')[1][:-2]))
-
-    a = np.array([1, 2, 3])
-    b = np.array([4, 5, 6])
-    print(np.vstack((a, b)))
+    lp_problem = LPProblem(3, 3, 2)
+    lp_problem.set_objective('max + 2x1 + 3x2 + 5x3')
+    lp_problem.add_constraint('+ 2x1 + 3x2 + 0x3 >= 10')
+    lp_problem.add_constraint('+ x1 + x2 + x3 <= 5')
+    lp_problem.add_constraint('+ 2x1 + 5x2 + 5x3 = 15')
+    lp_problem.add_range_constraint('+ x1 <= 0')
+    # lp_problem.add_range_constraint('+ x2 <= -2')
+    print(lp_problem.get_problem())
