@@ -78,6 +78,7 @@ class LPProblem():
                     else:
                         raise Exception('Invalid constraint')
                     assert elements[i][len(elements[i]) - 2:] == self.variables[var_index], 'Invalid constraint'
+                self.b = np.array([convert_string_to_float(elements[-1])]) if self.b is None else np.append(self.b, convert_string_to_float(elements[-1]))
             elif elements[-2] == '>=':
                 var_index = self.variables.index(elements[i][len(elements[i]) - 2:])
                 for i in range(1, len(elements) - 2, 2):
@@ -88,8 +89,9 @@ class LPProblem():
                     else:
                         raise Exception('Invalid constraint')
                     assert elements[i][len(elements[i]) - 2:] == self.variables[var_index], 'Invalid constraint'
+                self.b = np.array([-1 * convert_string_to_float(elements[-1])]) if self.b is None else np.append(self.b, -1 * convert_string_to_float(elements[-1]))
             self.A = np.array(A_row) if self.A is None else np.vstack((self.A, np.array(A_row)))
-            self.b = np.array([-1 * convert_string_to_float(elements[-1])]) if self.b is None else np.append(self.b, -1 * convert_string_to_float(elements[-1]))
+            
         return self
     
     def __transform_range_constraints__(self):
