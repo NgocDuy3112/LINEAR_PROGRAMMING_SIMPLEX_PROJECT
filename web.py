@@ -22,19 +22,7 @@ def get_user_input():
 
 
 def solve(problem):
-    A, b, c = problem.get_problem()
-    solver = None
-    if np.any(b < 0):
-        solver = TwoPhaseSimplexSolver(A, b, c)
-    elif np.any(b == 0):
-        solver = BlandSimplexSolver(A, b, c)
-    else:
-        solver = DantzigSimplexSolver(A, b, c)
-    solver.solve()
-    solution = solver.get_solution()
-    status = solver.get_status()
-    optimal_value = solver.get_optimal_value()
-    return solution, status, optimal_value
+    return problem.solve()
 
 
 if __name__ == "__main__":

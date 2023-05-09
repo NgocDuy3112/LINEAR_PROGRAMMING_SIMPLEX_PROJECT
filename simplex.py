@@ -24,8 +24,9 @@ class DantzigSimplexSolver():
         """
         Find pivot column and row
         """
-        pivot_col = np.argmin(self.tableau[0, :-1])
-        if self.tableau[0, pivot_col] >= 0:
+        try:
+            pivot_col = np.where(self.tableau[0, :-1] < 0)[0][0]
+        except:
             return None, None
         ratios = np.array([self.tableau[i, -1] / self.tableau[i, pivot_col] if self.tableau[i, pivot_col] > 0 
                            else np.inf for i in range(1, self.tableau.shape[0])])
@@ -136,7 +137,7 @@ class BlandSimplexSolver():
         """
         Find pivot column and row using Bland's rule
         """
-        pivot_col = np.argmin(self.tableau[0, :-1])
+        pivot_col = np.argmin(self.tableau[0, :-1] < 0)
         if self.tableau[0, pivot_col] >= 0:
             return None, None
         ratios = np.array([self.tableau[i, -1] / self.tableau[i, pivot_col] if self.tableau[i, pivot_col] > 0 
