@@ -158,11 +158,11 @@ class LPProblem():
 
     
 if __name__ == "__main__":
-    lp_problem = LPProblem(3, 3, 3)
-    lp_problem.set_objective('max + x1 + 3x2 - x3')
-    lp_problem.add_constraint('+ 2x1 + 2x2 - x3 <= 10/3')
-    lp_problem.add_constraint('+ 3x1 - 2x2 + x3 <= 10')
-    lp_problem.add_constraint('+ x1 - 3x2 <= 10')
-    lp_problem.add_range_constraint('x1 <= 1/3')
-    lp_problem.add_range_constraint('x2 >= 0')
-    print(lp_problem.solve())
+    lp_problem = LPProblem(2, 1, 4)
+    lp_problem.set_objective("max + 3x1 + 5x2")
+    lp_problem.add_constraint("+ x1 + 2x2 <= 5")
+    lp_problem.add_range_constraint("x1 <= 3")
+    lp_problem.add_range_constraint("x2 <= 2")
+    lp_problem.add_range_constraint("x1 >= 0")
+    lp_problem.add_range_constraint("x2 >= 0")
+    print(lp_problem.get_problem())

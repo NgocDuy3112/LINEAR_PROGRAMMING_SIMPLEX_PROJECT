@@ -24,9 +24,8 @@ class DantzigSimplexSolver():
         """
         Find pivot column and row
         """
-        try:
-            pivot_col = np.where(self.tableau[0, :-1] < 0)[0][0]
-        except:
+        pivot_col = np.argmin(self.tableau[0, :-1])
+        if self.tableau[0, pivot_col] >= 0:
             return None, None
         ratios = np.array([self.tableau[i, -1] / self.tableau[i, pivot_col] if self.tableau[i, pivot_col] > 0 
                            else np.inf for i in range(1, self.tableau.shape[0])])
@@ -91,7 +90,7 @@ class DantzigSimplexSolver():
         if np.all(self.tableau[0, basic_vars] != 0):
             return 'Optimal'
         elif np.any(self.tableau[0, basic_vars] == 0):
-            return 'Infinitive'
+            return 'Infinite solution'
         else:
             return 'Unbounded'
     
@@ -102,6 +101,9 @@ class DantzigSimplexSolver():
         self.tableau = self.__create_tableau__()
         while np.any(self.tableau[0, :-1] < 0):
             self.tableau = self.__pivot__()
+            # Break condition
+            if self.__get_status__() == 'Unbounded':
+                break
         return self
 
     def get_solution(self, slack=False):
@@ -112,7 +114,6 @@ class DantzigSimplexSolver():
     
     def get_status(self):
         return self.__get_status__()
-    
 
 class BlandSimplexSolver():
     def __init__(self, A, b, c):
@@ -137,7 +138,7 @@ class BlandSimplexSolver():
         """
         Find pivot column and row using Bland's rule
         """
-        pivot_col = np.argmin(self.tableau[0, :-1] < 0)
+        pivot_col = np.argmin(self.tableau[0, :-1])
         if self.tableau[0, pivot_col] >= 0:
             return None, None
         ratios = np.array([self.tableau[i, -1] / self.tableau[i, pivot_col] if self.tableau[i, pivot_col] > 0 
@@ -220,7 +221,7 @@ class BlandSimplexSolver():
         return self
     
     def get_solution(self, slack=False):
-        return self.__get_solution__(slack) if self.__get_status__() == 'Optimal' else np.inf
+        return self.__get_solution__(slack) if self.__get_status__() != 'Unbounded' else np.inf
 
     def get_optimal_value(self):
         return self.__get_optimal_value__()
@@ -230,4 +231,18 @@ class BlandSimplexSolver():
 
 
 class TwoPhaseSimplexSolver():
-    pass   
+    pass
+
+
+if __name__ == "__main__":
+    A = np.array([
+        [2, 2, -1, 1],
+        [3, -2, 1, -1],
+        [1, -3, 0, 0],
+        [1, 0, 0, 0]
+    ])
+    b = np.array([10/3, 10, 10, 1/3])
+    c = np.array([-1, -3, 1, -1])
+    solver = DantzigSimplexSolver(A, b, c)
+    solver.__create_tableau__()
+    print(solver.solve())
