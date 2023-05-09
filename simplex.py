@@ -29,6 +29,8 @@ class DantzigSimplexSolver():
             return None, None
         ratios = np.array([self.tableau[i, -1] / self.tableau[i, pivot_col] if self.tableau[i, pivot_col] > 0 
                            else np.inf for i in range(1, self.tableau.shape[0])])
+        if np.all(ratios == np.inf):
+            return None, None
         pivot_row = np.argmin(ratios) + 1
         return pivot_row, pivot_col
 
@@ -38,7 +40,7 @@ class DantzigSimplexSolver():
         """
         pivot_row, pivot_col = self.__find_pivot__()
         pivot = self.tableau[pivot_row, pivot_col]
-        self.tableau[pivot_row, :] /= pivot
+        self.tableau[pivot_row, :] = self.tableau[pivot_row, :] / pivot
         for i in range(self.tableau.shape[0]):
             if i != pivot_row:
                 self.tableau[i, :] -= self.tableau[i, pivot_col] * self.tableau[pivot_row, :]
@@ -85,35 +87,45 @@ class DantzigSimplexSolver():
     def __get_status__(self):
         """
         Get status
+        - Only solution: 1
+        - Unbounded: 2
+        - Infinite solution: 3
         """
-        basic_vars = self.__get_basic__()
-        if np.all(self.tableau[0, basic_vars] != 0):
-            return 'Optimal'
-        elif np.any(self.tableau[0, basic_vars] == 0):
-            return 'Infinite solution'
-        else:
-            return 'Unbounded'
+        non_basic_vars = self.__get_non_basic__()
+        if np.all(self.tableau[0, non_basic_vars] < 0) and np.all(self.tableau[1:, -1] >= 0):
+            return 2
+        elif len(non_basic_vars) > np.count_nonzero(self.tableau[0: -1]):
+            return 3
+        return 1
     
     def solve(self):
         """
         Solve the linear program
         """
         self.tableau = self.__create_tableau__()
+        print(self.tableau)
         while np.any(self.tableau[0, :-1] < 0):
+            
             self.tableau = self.__pivot__()
+            print(self.tableau)
             # Break condition
-            if self.__get_status__() == 'Unbounded':
+            if self.__get_status__() == 2:
                 break
         return self
 
     def get_solution(self, slack=False):
-        return self.__get_solution__(slack) if self.__get_status__() != 'Unbounded' else np.inf
+        return self.__get_solution__(slack) if self.__get_status__() == 1 else None
 
     def get_optimal_value(self):
-        return self.__get_optimal_value__()
+        return self.__get_optimal_value__() if self.__get_status__() != 2 else None
     
     def get_status(self):
-        return self.__get_status__()
+        if self.__get_status__() == 1:
+            return 'Only solution'
+        elif self.__get_status__() == 2:
+            return 'Unbounded'
+        else:
+            return 'Infinite solution'
 
 class BlandSimplexSolver():
     def __init__(self, A, b, c):
@@ -121,7 +133,7 @@ class BlandSimplexSolver():
         self.b = b
         self.c = c
         self.tableau = np.zeros((self.A.shape[0] + 1, self.A.shape[1] + self.A.shape[0] + 1))
-
+    
     def __create_tableau__(self):
         """
         Create the tableau for the simplex method
@@ -133,20 +145,20 @@ class BlandSimplexSolver():
         self.tableau[1:, n:-1] = np.eye(m)
         self.tableau[1:, -1] = self.b
         return self.tableau
-
+    
     def __find_pivot__(self):
         """
-        Find pivot column and row using Bland's rule
+        Find pivot column and row
         """
-        pivot_col = np.argmin(self.tableau[0, :-1])
-        if self.tableau[0, pivot_col] >= 0:
+        neg_cols = np.where(self.tableau[0, :-1] < 0)[0]
+        if len(neg_cols) == 0:
             return None, None
+        pivot_col = neg_cols[0]
         ratios = np.array([self.tableau[i, -1] / self.tableau[i, pivot_col] if self.tableau[i, pivot_col] > 0 
                            else np.inf for i in range(1, self.tableau.shape[0])])
-        # Apply Bland's rule to choose the pivot row in case of tie
-        min_ratio_indices = np.where(ratios == ratios.min())[0]
-        pivot_row = min_ratio_indices[np.argmin([np.argmin(self.tableau[min_ratio_indices + 1, :-1] > 0) 
-                                                 for i in min_ratio_indices])] + 1
+        if np.all(ratios == np.inf):
+            return None, None
+        pivot_row = np.argmin(ratios) + 1
         return pivot_row, pivot_col
 
     def __pivot__(self):
@@ -155,7 +167,7 @@ class BlandSimplexSolver():
         """
         pivot_row, pivot_col = self.__find_pivot__()
         pivot = self.tableau[pivot_row, pivot_col]
-        self.tableau[pivot_row, :] /= pivot
+        self.tableau[pivot_row, :] = self.tableau[pivot_row, :] / pivot
         for i in range(self.tableau.shape[0]):
             if i != pivot_row:
                 self.tableau[i, :] -= self.tableau[i, pivot_col] * self.tableau[pivot_row, :]
@@ -170,13 +182,13 @@ class BlandSimplexSolver():
             if np.sum(self.tableau[:, j] == 1) == 1 and np.sum(self.tableau[:, j] == 0) == (self.tableau.shape[0] - 1):
                 basics.append(j)
         return basics
-    
+
     def __get_non_basic__(self):
         """
         Get non-basic variables
         """
         return [i for i in range(self.tableau.shape[1] - 1) if i not in self.__get_basic__()]
-
+    
     def __get_tableau__(self):
         """
         Get tableau
@@ -202,32 +214,45 @@ class BlandSimplexSolver():
     def __get_status__(self):
         """
         Get status
+        - Only solution: 1
+        - Unbounded: 2
+        - Infinite solution: 3
         """
-        basic_vars = self.__get_basic__()
-        if np.all(self.tableau[0, basic_vars] != 0):
-            return 'Optimal'
-        elif np.any(self.tableau[0, basic_vars] == 0):
-            return 'Infinite solution'
-        else:
-            return 'Unbounded'
-
+        non_basic_vars = self.__get_non_basic__()
+        if np.all(self.tableau[0, non_basic_vars] < 0) and np.all(self.tableau[1:, -1] >= 0):
+            return 2
+        elif len(non_basic_vars) > np.count_nonzero(self.tableau[0: -1]):
+            return 3
+        return 1
+    
     def solve(self):
         """
         Solve the linear program
         """
         self.tableau = self.__create_tableau__()
+        print(self.tableau)
         while np.any(self.tableau[0, :-1] < 0):
+            
             self.tableau = self.__pivot__()
+            print(self.tableau)
+            # Break condition
+            if self.__get_status__() == 2:
+                break
         return self
-    
+
     def get_solution(self, slack=False):
-        return self.__get_solution__(slack) if self.__get_status__() != 'Unbounded' else np.inf
+        return self.__get_solution__(slack) if self.__get_status__() == 1 else None
 
     def get_optimal_value(self):
-        return self.__get_optimal_value__()
+        return self.__get_optimal_value__() if self.__get_status__() != 2 else None
     
     def get_status(self):
-        return self.__get_status__()
+        if self.__get_status__() == 1:
+            return 'Only solution'
+        elif self.__get_status__() == 2:
+            return 'Unbounded'
+        else:
+            return 'Infinite solution'
 
 
 class TwoPhaseSimplexSolver():
@@ -235,14 +260,14 @@ class TwoPhaseSimplexSolver():
 
 
 if __name__ == "__main__":
-    A = np.array([
-        [2, 2, -1, 1],
-        [3, -2, 1, -1],
-        [1, -3, 0, 0],
-        [1, 0, 0, 0]
-    ])
-    b = np.array([10/3, 10, 10, 1/3])
-    c = np.array([-1, -3, 1, -1])
-    solver = DantzigSimplexSolver(A, b, c)
-    solver.__create_tableau__()
-    print(solver.solve())
+    A = np.array([[1., 2.],
+                [1., 0.],
+                [0., 1.]])
+    b = np.array([5, 3, 2])
+    c = np.array([-3, -5])
+    solver = BlandSimplexSolver(A, b, c)
+    solver.solve()
+
+    print(solver.get_solution())
+    print(solver.get_optimal_value())
+    print(solver.get_status())
