@@ -1,5 +1,5 @@
 import numpy as np
-
+from scipy.optimize import linprog
 
 class DantzigSimplexSolver():
     def __init__(self, A, b, c):
