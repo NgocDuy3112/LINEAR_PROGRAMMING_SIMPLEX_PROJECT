@@ -17,27 +17,21 @@ def get_user_input():
     st.divider()
     st.header('Define the objective function')
     target_func = st.text_input('Enter objective function')
-    setted = st.button("Set")
-    if setted:
-        lp_problem.set_objective(target_func)
+    lp_problem.set_objective(target_func)
 
     if num_constraints > 0:
         st.divider()
         st.header('Define the constraints')
         for i in range(num_constraints):
             constraint = st.text_input('Enter constraint ' + str(i + 1))
-            added = st.button("Add")
-            if added:
-                lp_problem.add_constraint(constraint)
+            lp_problem.add_constraint(constraint)
 
     if num_ranges > 0:
         st.divider()
         st.header('Define the range constraints')
         for i in range(num_ranges):
             range_constraint = st.text_input('Enter range constraint ' + str(i + 1))
-            added = st.button("Add")                
-            if added:
-                lp_problem.add_range_constraint(range_constraint)
+            lp_problem.add_range_constraint(range_constraint)   
 
     return lp_problem
 
@@ -71,15 +65,17 @@ if __name__ == "__main__":
     with user_guide_tab:
         st.write("0. Click on the Solver tab to start solving the problem. \
                  Click on the User guide tab to see the user guide.")
-        # st.image("images/section_0.png", width=650)
-        # st.write("1. Enter number of variables, constraints and ranges, for example:")
-        # st.image("images/section_1.png", width=650)
-        # st.write("2. Enter the objective function as the same as the example:")
-        # st.image("images/section_2.png", width=650)
-        # st.write("3. Enter the constraints as the same as the example:")
-        # st.image("images/section_3.png", width=650)
-        # st.write("4. Enter the range constraints as the same as the example:")
-        # st.image("images/section_4.png", width=650)
+        st.image("images/section_0.png", width=650)
+        st.write("1. Enter number of variables, constraints and ranges, for example:")
+        st.image("images/section_1.png", width=650)
+        st.write("2. Enter the objective function as the same as the example:")
+        st.image("images/section_2.png", width=650)
+        st.write("3. Enter the constraints as the same as the example:")
+        st.image("images/section_3.png", width=650)
+        st.write("4. Enter the range constraints as the same as the example:")
+        st.image("images/section_4.png", width=650)
+        st.write("5. Click on the Solve button to see the result:")
+        st.image("images/section_5.png", width=650)
 
     with main_tab:
         problem = get_user_input()

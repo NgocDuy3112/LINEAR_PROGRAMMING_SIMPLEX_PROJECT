@@ -33,7 +33,6 @@ class LPProblem():
         problem_type = elements[0]
         c = []
         var_index = -1
-        assert problem_type == 'max' or problem_type == 'min', 'Invalid objective function'
         self.type = 1 if problem_type == 'min' else -1
         for i in range(2, len(elements), 2):
             var_index += 1
@@ -59,9 +58,6 @@ class LPProblem():
                         A_row[var_index] = (-1 * convert_string_to_float(elements[i][0])) if elements[i][0] != 'x' else -1.0
                     elif elements[i - 1][0] == '+':
                         A_row[var_index] = (convert_string_to_float(elements[i][0])) if elements[i][0] != 'x' else 1.0
-                    else:
-                        raise Exception('Invalid constraint')
-                    assert elements[i][len(elements[i]) - 2:] == self.variables[var_index], 'Invalid constraint'
                 self.b = np.array([convert_string_to_float(elements[-1])]) if self.b is None else np.append(self.b, convert_string_to_float(elements[-1]))
             elif elements[-2] == '>=':
                 for i in range(1, len(elements) - 2, 2):
@@ -70,9 +66,6 @@ class LPProblem():
                         A_row[var_index] = (convert_string_to_float(elements[i][0])) if elements[i][0] != 'x' else 1.0
                     elif elements[i - 1][0] == '+':
                         A_row[var_index] = (-1 * convert_string_to_float(elements[i][0])) if elements[i][0] != 'x' else -1.0
-                    else:
-                        raise Exception('Invalid constraint')
-                    assert elements[i][len(elements[i]) - 2:] == self.variables[var_index], 'Invalid constraint'
                 self.b = np.array([-1 * convert_string_to_float(elements[-1])]) if self.b is None else np.append(self.b, -1 * convert_string_to_float(elements[-1]))
             self.A = np.array(A_row) if self.A is None else np.vstack((self.A, np.array(A_row)))
             
@@ -124,7 +117,6 @@ class LPProblem():
         if constraint_str == '':
             return self
         elements = constraint_str.split()
-        assert elements[-2] == '<=' or elements[-2] == '>=' or elements[-2] == '=', 'Invalid constraint'
         if elements[-2] == '<=' or elements[-2] == '>=':
             self.constraints.append(constraint_str)
         else:
