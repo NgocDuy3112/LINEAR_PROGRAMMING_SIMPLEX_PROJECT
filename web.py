@@ -17,7 +17,9 @@ def get_user_input():
     st.divider()
     st.header('Define the objective function')
     target_func = st.text_input('Enter objective function')
-    lp_problem.set_objective(target_func)
+    setted = st.button("Set")
+    if setted:
+        lp_problem.set_objective(target_func)
 
     if num_constraints > 0:
         st.divider()
