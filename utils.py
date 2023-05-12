@@ -22,6 +22,7 @@ class LPProblem():
         self.range_constraints = []
         self.neg_variables = []
         self.objective = None
+        self.type = None
         self.A = None
         self.b = None
         self.c = None
@@ -33,6 +34,7 @@ class LPProblem():
         c = []
         var_index = -1
         assert problem_type == 'max' or problem_type == 'min', 'Invalid objective function'
+        self.type = 1 if problem_type == 'min' else -1
         for i in range(2, len(elements), 2):
             var_index += 1
             if elements[i - 1][0] == '-':
@@ -62,8 +64,8 @@ class LPProblem():
                     assert elements[i][len(elements[i]) - 2:] == self.variables[var_index], 'Invalid constraint'
                 self.b = np.array([convert_string_to_float(elements[-1])]) if self.b is None else np.append(self.b, convert_string_to_float(elements[-1]))
             elif elements[-2] == '>=':
-                var_index = self.variables.index(elements[i][len(elements[i]) - 2:])
                 for i in range(1, len(elements) - 2, 2):
+                    var_index = self.variables.index(elements[i][len(elements[i]) - 2:])
                     if elements[i - 1][0] == '-':
                         A_row[var_index] = (convert_string_to_float(elements[i][0])) if elements[i][0] != 'x' else 1.0
                     elif elements[i - 1][0] == '+':
@@ -119,6 +121,8 @@ class LPProblem():
         return self
 
     def add_constraint(self, constraint_str):
+        if constraint_str == '':
+            return self
         elements = constraint_str.split()
         assert elements[-2] == '<=' or elements[-2] == '>=' or elements[-2] == '=', 'Invalid constraint'
         if elements[-2] == '<=' or elements[-2] == '>=':
@@ -132,10 +136,6 @@ class LPProblem():
         self.range_constraints.append(constraint_str)
         return self
     
-    def get_problem(self):
-        self.__get_problem__()
-        return self.A, self.b, self.c
-
     def solve(self):
         self.__get_problem__()
         if np.any(self.b < 0):
@@ -146,6 +146,10 @@ class LPProblem():
             self.solver = DantzigSimplexSolver(self.A, self.b, self.c)
         self.solver.solve()
         return self
+    
+    def get_problem(self):
+        self.__get_problem__()
+        return self.A, self.b, self.c
     
     def get_solution(self):
         solution = self.solver.get_solution()
@@ -169,20 +173,24 @@ class LPProblem():
         return dict(zip(real_variables, real_solution))
 
     def get_optimal_value(self):
-        return self.solver.get_optimal_value()
+        return self.solver.get_optimal_value() * self.type
     
     def get_status(self):
         return self.solver.get_status()
 
     
 if __name__ == "__main__":
-    lp_problem = LPProblem(2, 4, 1)
-    lp_problem.set_objective("min - 4x1 - 5x2")
-    lp_problem.add_constraint("+ x1 + 2x2 <= 3")
-    lp_problem.add_constraint("+ x1 - x2 <= 2")
-    lp_problem.add_constraint("+ 2x1 + x2 <= 3")
-    lp_problem.add_constraint("+ 3x1 + 4x2 <= 8")
+    lp_problem = LPProblem(2, 3, 2)
+    lp_problem.set_objective("max + 3x1 + 2x2")
+    lp_problem.add_constraint("+ x1 - x2 >= -4")
+    lp_problem.add_constraint("+ x1 + 2x2 <= 14")
+    lp_problem.add_constraint("+ 5x1 + 2x2 <= 30")
     lp_problem.add_range_constraint("x1 >= 0")
+    lp_problem.add_range_constraint("x2 >= 0")
+    # A, b, c = lp_problem.get_problem()
     lp_problem.solve()
     print(lp_problem.get_solution())
     print(lp_problem.get_optimal_value())
+    print(lp_problem.get_status())
+    # solution = linprog(c, A_ub=A, b_ub=b)
+    # print(solution)
