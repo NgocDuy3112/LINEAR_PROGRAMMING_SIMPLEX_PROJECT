@@ -284,17 +284,3 @@ class TwoPhaseSimplexSolver():
             return 'Unbounded'
         else:
             return 'No solution'
-
-
-if __name__ == "__main__":
-    A = np.array([[1., 2.],
-                [1., 0.],
-                [0., 1.]])
-    b = np.array([5, 3, 2])
-    c = np.array([-3, -5])
-    solver = TwoPhaseSimplexSolver(A, b, c)
-    solver.solve()
-
-    print(solver.get_solution())
-    print(solver.get_optimal_value())
-    print(solver.get_status())

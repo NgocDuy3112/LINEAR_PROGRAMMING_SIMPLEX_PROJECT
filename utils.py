@@ -187,10 +187,8 @@ if __name__ == "__main__":
     lp_problem.add_constraint("+ 5x1 + 2x2 <= 30")
     lp_problem.add_range_constraint("x1 >= 0")
     lp_problem.add_range_constraint("x2 >= 0")
-    # A, b, c = lp_problem.get_problem()
+ 
     lp_problem.solve()
     print(lp_problem.get_solution())
     print(lp_problem.get_optimal_value())
     print(lp_problem.get_status())
-    # solution = linprog(c, A_ub=A, b_ub=b)
-    # print(solution)
