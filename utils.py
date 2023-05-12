@@ -26,10 +26,6 @@ class LPProblem():
         self.b = None
         self.c = None
         self.solver = None
-    
-    def set_objective(self, objective_str):
-        self.objective = objective_str
-        return self
 
     def __transform_objective__(self):
         elements = self.objective.split()
@@ -47,20 +43,6 @@ class LPProblem():
                 raise Exception('Invalid objective function')
             assert elements[i][len(elements[i]) - 2:] == self.variables[var_index], 'Invalid objective function'
         self.c = np.array(c) if problem_type == 'min' else -1 * np.array(c)
-        return self
-
-    def add_constraint(self, constraint_str):
-        elements = constraint_str.split()
-        assert elements[-2] == '<=' or elements[-2] == '>=' or elements[-2] == '=', 'Invalid constraint'
-        if elements[-2] == '<=' or elements[-2] == '>=':
-            self.constraints.append(constraint_str)
-        else:
-            self.constraints.append(constraint_str.replace('=', '<='))
-            self.constraints.append(constraint_str.replace('=', '>='))
-        return self
-    
-    def add_range_constraint(self, constraint_str):
-        self.range_constraints.append(constraint_str)
         return self
     
     def __transform_constraints__(self):
@@ -132,6 +114,24 @@ class LPProblem():
         self.__transform_range_constraints__()
         return self
     
+    def set_objective(self, objective_str):
+        self.objective = objective_str
+        return self
+
+    def add_constraint(self, constraint_str):
+        elements = constraint_str.split()
+        assert elements[-2] == '<=' or elements[-2] == '>=' or elements[-2] == '=', 'Invalid constraint'
+        if elements[-2] == '<=' or elements[-2] == '>=':
+            self.constraints.append(constraint_str)
+        else:
+            self.constraints.append(constraint_str.replace('=', '<='))
+            self.constraints.append(constraint_str.replace('=', '>='))
+        return self
+    
+    def add_range_constraint(self, constraint_str):
+        self.range_constraints.append(constraint_str)
+        return self
+    
     def get_problem(self):
         self.__get_problem__()
         return self.A, self.b, self.c
@@ -148,7 +148,25 @@ class LPProblem():
         return self
     
     def get_solution(self):
-        return self.solver.get_solution()
+        solution = self.solver.get_solution()
+        variables = self.variables
+        real_variables = set()
+        for variable in variables:
+            if variable[-1] == '+' or variable[-1] == '-':
+                real_variables.add(variable[:-1])
+            else:
+                real_variables.add(variable)
+        real_variables = list(real_variables)
+        real_variables.sort()
+        real_solution = []
+        for i in range(len(variables)):
+            if variables[i][-1] == '+':
+                real_solution.append(solution[i] - solution[i + 1])
+            elif variables[i][-1] == '-':
+                continue
+            else:
+                real_solution.append(solution[i])
+        return dict(zip(real_variables, real_solution))
 
     def get_optimal_value(self):
         return self.solver.get_optimal_value()
@@ -158,11 +176,13 @@ class LPProblem():
 
     
 if __name__ == "__main__":
-    lp_problem = LPProblem(2, 1, 4)
-    lp_problem.set_objective("max + 3x1 + 5x2")
-    lp_problem.add_constraint("+ x1 + 2x2 <= 5")
-    lp_problem.add_range_constraint("x1 <= 3")
-    lp_problem.add_range_constraint("x2 <= 2")
+    lp_problem = LPProblem(2, 4, 1)
+    lp_problem.set_objective("min - 4x1 - 5x2")
+    lp_problem.add_constraint("+ x1 + 2x2 <= 3")
+    lp_problem.add_constraint("+ x1 - x2 <= 2")
+    lp_problem.add_constraint("+ 2x1 + x2 <= 3")
+    lp_problem.add_constraint("+ 3x1 + 4x2 <= 8")
     lp_problem.add_range_constraint("x1 >= 0")
-    lp_problem.add_range_constraint("x2 >= 0")
-    print(lp_problem.get_problem())
+    lp_problem.solve()
+    print(lp_problem.get_solution())
+    print(lp_problem.get_optimal_value())

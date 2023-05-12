@@ -1,5 +1,4 @@
 import streamlit as st
-import numpy as np
 from utils import *
 from simplex import *
 

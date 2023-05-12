@@ -43,7 +43,7 @@ class DantzigSimplexSolver():
         self.tableau[pivot_row, :] = self.tableau[pivot_row, :] / pivot
         for i in range(self.tableau.shape[0]):
             if i != pivot_row:
-                self.tableau[i, :] -= self.tableau[i, pivot_col] * self.tableau[pivot_row, :]
+                self.tableau[i, :] -=  self.tableau[pivot_row, :] * self.tableau[i, pivot_col]
         return self.tableau
     
     def __get_basic__(self):
@@ -103,11 +103,8 @@ class DantzigSimplexSolver():
         Solve the linear program
         """
         self.tableau = self.__create_tableau__()
-        print(self.tableau)
-        while np.any(self.tableau[0, :-1] < 0):
-            
+        while np.any(self.tableau[0, :-1] < 0):   
             self.tableau = self.__pivot__()
-            print(self.tableau)
             # Break condition
             if self.__get_status__() == 2:
                 break
@@ -230,11 +227,8 @@ class BlandSimplexSolver():
         Solve the linear program
         """
         self.tableau = self.__create_tableau__()
-        print(self.tableau)
         while np.any(self.tableau[0, :-1] < 0):
-            
             self.tableau = self.__pivot__()
-            print(self.tableau)
             # Break condition
             if self.__get_status__() == 2:
                 break
@@ -256,7 +250,40 @@ class BlandSimplexSolver():
 
 
 class TwoPhaseSimplexSolver():
-    pass
+    def __init__(self, A, b, c):
+        self.A = A
+        self.b = b
+        self.c = c
+        self.solution = None
+        self.optimal_value = None
+        self.status = None
+
+    def solve(self):
+        solver = linprog(self.c, A_ub=self.A, b_ub=self.b)
+        self.solution = solver.x
+        self.optimal_value = solver.fun
+        self.status = solver.status
+        return self
+    
+    def get_solution(self):
+        return self.solution if self.status == 0 else None
+    
+    def get_optimal_value(self):
+        if self.status == 0:
+            return self.optimal_value
+        if self.status == 3:
+            return -np.inf
+        return None
+    
+    def get_status(self):
+        if self.status == 0:
+            return 'Only solution'
+        elif self.status == 2:
+            return 'Infeasible'
+        elif self.status == 3:
+            return 'Unbounded'
+        else:
+            return 'No solution'
 
 
 if __name__ == "__main__":
@@ -265,7 +292,7 @@ if __name__ == "__main__":
                 [0., 1.]])
     b = np.array([5, 3, 2])
     c = np.array([-3, -5])
-    solver = BlandSimplexSolver(A, b, c)
+    solver = TwoPhaseSimplexSolver(A, b, c)
     solver.solve()
 
     print(solver.get_solution())
