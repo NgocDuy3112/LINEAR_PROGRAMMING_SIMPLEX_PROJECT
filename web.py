@@ -2,6 +2,7 @@ import streamlit as st
 from utils import *
 from simplex import *
 
+
 def get_user_input():
     st.header('Define the problem')
 
@@ -35,18 +36,26 @@ def get_user_input():
 
     return lp_problem
 
+
 def solve(problem):
     problem.solve()
     return problem.get_solution(), problem.get_optimal_value(), problem.get_status()
 
+
 def print_solution(solution, optimal_value, status):
+    try:
+        st.success("Problem solved!")
+    except:
+        st.error("Problem not solved!")
+        return
     st.write('Solution: ')
     up_cols = st.columns(len(solution))
     for i, (variable, value) in enumerate(solution.items()):
         with up_cols[i]:
-            st.write(variable, '= ', value)
-    st.write('Optimal value: ', optimal_value)
+            st.write(variable, '= ', round(value, 3))
+    st.write('Optimal value: ', round(optimal_value, 3))
     st.write('Status: ', status)
+
 
 if __name__ == "__main__":
     st.title('LINEAR PROGRAMMING SOLVER WEB APP')
@@ -55,7 +64,7 @@ if __name__ == "__main__":
         st.image("images/logo_khtn.png", width=300)
         st.header('AUTHORS')
         st.divider()
-        st.write("- Nguyen Cong Hau - 1911xxxx \n" + 
+        st.write("- Thi Ngọc Phúc hậu - 19110313 \n" + 
                 "- Quách Phong Dương - 20280022 \n" +
                 "- Nguyễn Lê Ngọc Duy - 20280023 \n" +
                 "- Trần Lê Minh - 20280066 \n")

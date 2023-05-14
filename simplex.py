@@ -92,9 +92,9 @@ class DantzigSimplexSolver():
         - Infinite solution: 3
         """
         non_basic_vars = self.__get_non_basic__()
-        if np.all(self.tableau[0, non_basic_vars] < 0) and np.all(self.tableau[1:, -1] >= 0):
+        if np.all(self.tableau[0, non_basic_vars] < 0) and np.all(self.tableau[1:, non_basic_vars] >= 0):
             return 2
-        elif len(non_basic_vars) > np.count_nonzero(self.tableau[0: -1]):
+        elif np.any(self.tableau[0, non_basic_vars] == 0):
             return 3
         return 1
     
@@ -111,7 +111,7 @@ class DantzigSimplexSolver():
         return self
 
     def get_solution(self, slack=False):
-        return self.__get_solution__(slack) if self.__get_status__() == 1 else None
+        return self.__get_solution__(slack) if self.__get_status__() == 1 or self.__get_status__() == 2 else None
 
     def get_optimal_value(self):
         return self.__get_optimal_value__() if self.__get_status__() != 2 else None
@@ -216,9 +216,9 @@ class BlandSimplexSolver():
         - Infinite solution: 3
         """
         non_basic_vars = self.__get_non_basic__()
-        if np.all(self.tableau[0, non_basic_vars] < 0) and np.all(self.tableau[1:, -1] >= 0):
+        if np.all(self.tableau[0, non_basic_vars] < 0) and np.all(self.tableau[1:, non_basic_vars] >= 0):
             return 2
-        elif len(non_basic_vars) > np.count_nonzero(self.tableau[0: -1]):
+        elif np.any(self.tableau[0, non_basic_vars] == 0):
             return 3
         return 1
     
@@ -235,7 +235,7 @@ class BlandSimplexSolver():
         return self
 
     def get_solution(self, slack=False):
-        return self.__get_solution__(slack) if self.__get_status__() == 1 else None
+        return self.__get_solution__(slack) if self.__get_status__() == 1 or self.__get_status__() == 2 else None
 
     def get_optimal_value(self):
         return self.__get_optimal_value__() if self.__get_status__() != 2 else None
