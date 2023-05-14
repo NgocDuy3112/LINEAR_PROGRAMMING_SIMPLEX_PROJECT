@@ -48,12 +48,18 @@ def print_solution(solution, optimal_value, status):
     except:
         st.error("Problem not solved!")
         return
-    st.write('Solution: ')
-    up_cols = st.columns(len(solution))
-    for i, (variable, value) in enumerate(solution.items()):
-        with up_cols[i]:
-            st.write(variable, '= ', round(value, 3))
-    st.write('Optimal value: ', round(optimal_value, 3))
+    if solution is None:
+        st.write('No solution')
+    else:
+        st.write('Solution: ')
+        up_cols = st.columns(len(solution))
+        for i, (variable, value) in enumerate(solution.items()):
+            with up_cols[i]:
+                st.write(variable, '= ', round(value, 3))
+    if optimal_value is None:
+        st.write('No optimal value')
+    else:
+        st.write('Optimal value: ', round(optimal_value, 3))
     st.write('Status: ', status)
 
 
