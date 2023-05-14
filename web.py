@@ -1,7 +1,10 @@
 import streamlit as st
+from PIL import Image
 from utils import *
 from simplex import *
 
+img = Image.open("images/calculator_icon.png")
+st.set_page_config(page_title="Linear Programming Solver", page_icon=img)
 
 def get_user_input():
     st.header('Define the problem')

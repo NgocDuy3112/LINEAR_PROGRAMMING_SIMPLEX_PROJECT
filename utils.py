@@ -180,11 +180,15 @@ class LPProblem():
 
     
 if __name__ == "__main__":
-    lp_problem = LPProblem(2, 1, 2)
-    lp_problem.set_objective("min - 2x1 - x2")
-    lp_problem.add_constraint("+ 3x1 + x2 <= 3")
+    lp_problem = LPProblem(4, 2, 5)
+    lp_problem.set_objective("min - 10x1 + x2 + 9x3 + 24x4")
+    lp_problem.add_constraint("+ 0.5x1 - 5.5x2 - 2.5x3 + 9x4 <= 0")
+    lp_problem.add_constraint("+ 0.5x1 - 1.5x2 - 0.5x3 + 1x4 <= 0")
     lp_problem.add_range_constraint("x1 >= 0")
     lp_problem.add_range_constraint("x2 >= 0")
+    lp_problem.add_range_constraint("x1 <= 1")
+    lp_problem.add_range_constraint("x3 >= 0")
+    lp_problem.add_range_constraint("x4 >= 0")
     
     # print(lp_problem.get_problem())
     lp_problem.solve()
