@@ -21,6 +21,8 @@ class LPProblem():
         self.constraints = []
         self.range_constraints = []
         self.neg_variables = []
+        self.signed_variables = set()
+        self.unsigned_variables = set()
         self.objective = None
         self.type = None
         self.A = None
@@ -72,12 +74,11 @@ class LPProblem():
         return self
     
     def __transform_range_constraints__(self):
-        signed_variables = set()
         for constraint in self.range_constraints:
             elements = constraint.split()
             if elements[1] == '<=':
                 if elements[2] == '0':
-                    signed_variables.add(elements[0])
+                    self.signed_variables.add(elements[0])
                     idx = self.variables.index(elements[0])
                     self.A[:, idx] = -1 * self.A[:, idx]
                     self.c[idx] = -1 * self.c[idx]
@@ -89,15 +90,15 @@ class LPProblem():
                     self.n_constraints += 1
             elif elements[1] == '>=':
                 if elements[2] == '0':
-                    signed_variables.add(elements[0])
+                    self.signed_variables.add(elements[0])
                 if elements[2] != '0':
                     A_row = np.zeros(self.n_variables)
                     A_row[self.variables.index(elements[0])] = -1
                     self.A = np.vstack((self.A, A_row))
                     self.b = np.append(self.b, -1 * convert_string_to_float(elements[2]))
                     self.n_constraints += 1
-        unsigned_variables = set(self.variables) - signed_variables
-        for variable in unsigned_variables:
+        self.unsigned_variables = set(self.variables) - self.signed_variables
+        for variable in self.unsigned_variables:
             idx = self.variables.index(variable)
             self.variables[idx] = variable + '+'
             self.variables.insert(idx + 1, variable + '-')
@@ -165,7 +166,7 @@ class LPProblem():
             elif variables[i][-1] == '-':
                 continue
             else:
-                real_solution.append(solution[i])
+                real_solution.append(solution[i]) if variables[i] not in self.signed_variables else real_solution.append(-1 * solution[i])
         return dict(zip(real_variables, real_solution))
 
     def get_optimal_value(self):
@@ -179,29 +180,28 @@ class LPProblem():
     def __get_tableau__(self):
         return self.solver.__get_tableau__()
     
-    # def __get_basic__(self):
-    #     return self.solver.__get_basic__()
+    def __get_basic__(self):
+        return self.solver.__get_basic__()
 
-    # def __get_non_basic__(self):
-    #     return self.solver.__get_non_basic__()
+    def __get_non_basic__(self):
+        return self.solver.__get_non_basic__()
 
     
 if __name__ == "__main__":
-    lp_problem = LPProblem(2, 6, 4)
-    lp_problem.set_objective("max + 3x1 + 2x2")
-    lp_problem.add_constraint("- x1 + 2x2 >= -1")
-    lp_problem.add_constraint("+ x1 - x2 <= 2")
-    lp_problem.add_constraint("- 2x1 - x2 >= -6")
-    lp_problem.add_constraint("+ 2x1 + x2 <= 16")
-    lp_problem.add_constraint("+ x1 + x2 <= 12")
-    lp_problem.add_constraint("+ x1 + 2x2 <= 21")
-    lp_problem.add_range_constraint("x1 >= 0")
-    lp_problem.add_range_constraint("x2 >= 0")
-    lp_problem.add_range_constraint("x1 <= 5")
-    lp_problem.add_range_constraint("x2 <= 10")
+    lp_problem = LPProblem(2, 3, 2)
+    lp_problem.set_objective("min - x1 + x2")
+    lp_problem.add_constraint("- x1 - 2x2 <= 6")
+    lp_problem.add_constraint("+ x1 - 2x2 <= 4")
+    lp_problem.add_constraint("- x1 + x2 <= 1")
+    lp_problem.add_range_constraint("x1 <= 0")
+    lp_problem.add_range_constraint("x2 <= 0")
     
     # print(lp_problem.get_problem())
     lp_problem.solve()
+
+    print(lp_problem.__get_tableau__())
+    print(lp_problem.__get_basic__())
+    print(lp_problem.__get_non_basic__())
 
     print(lp_problem.get_solution())
     print(lp_problem.get_optimal_value())
