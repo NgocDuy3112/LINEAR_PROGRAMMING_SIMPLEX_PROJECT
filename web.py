@@ -64,7 +64,7 @@ if __name__ == "__main__":
         st.image("images/logo_khtn.png", width=300)
         st.header('AUTHORS')
         st.divider()
-        st.write("- Thi Ngọc Phúc hậu - 19110313 \n" + 
+        st.write("- Thi Ngọc Phúc Hậu - 19110313 \n" + 
                 "- Quách Phong Dương - 20280022 \n" +
                 "- Nguyễn Lê Ngọc Duy - 20280023 \n" +
                 "- Trần Lê Minh - 20280066 \n")
